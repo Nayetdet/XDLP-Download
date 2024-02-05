@@ -181,6 +181,6 @@ if /i not "!restart!"=="n" (
 
 call :printTitle
 echo Fechando o programa...
-pause
+timeout /t 3 /nobreak > nul
 endlocal
 exit
