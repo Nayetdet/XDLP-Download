@@ -12,11 +12,14 @@ Antes de usar este script, certifique-se de ter as seguintes ferramentas instala
 > Certifique-se de que todas as ferramentas e dependências estejam corretamente configuradas em seu Windows. Verifique se yt-dlp, spotdl, ffmpeg e AtomicParsley estão acessíveis via terminal e adicionados ao PATH do sistema.
 
 ## Utilização
-1. Execute o script XDLP Downloader.bat dando dois cliques sobre ele.
-2. Escolha a plataforma desejada digitando o número correspondente no console.
-3. Insira o nome ou URL do vídeo/música quando solicitado.
-4. Aguarde o download ser concluído. O arquivo será salvo no mesmo diretório do script.
+1. Faça o download ou clone este repositório para o seu sistema.
+2. Abra um terminal ou prompt de comando.
+3. Navegue até o diretório onde o script está localizado.
+4. Execute o script "XDLP Downloader.bat".
+5. Escolha a plataforma desejada (YouTube ou Spotify).
+6. Insira o nome ou URL do vídeo/música que deseja baixar.
+7. Siga as instruções no terminal para completar o processo de download.
+8. O arquivo será salvo no diretório de downloads padrão do seu sistema.
 
 ## Notas
 - Além de permitir o download de vídeos do YouTube, o script oferece a flexibilidade de explorar outros sites suportados pelo yt-dlp. Ao utilizar o script, você tem a opção de pesquisar e baixar conteúdo de uma ampla variedade de plataformas suportadas. Consulte a [documentação completa do yt-dlp](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md) para obter a lista abrangente de sites suportados e as diversas opções de pesquisa disponíveis.
-- Certifique-se de ter permissões adequadas para escrever no diretório onde o script está sendo executado.
