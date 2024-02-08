@@ -102,10 +102,10 @@ set /p "media_format_num=> "
 
 if "!media_format_num!"=="1" (
      set "media_type=o vídeo"
-     set "media_format=--format bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best --remux-video mp4"
+     set "media_format=--format bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best --format-sort vcodec:h264,res,acodec:m4a --remux-video mp4"
 ) else if "!media_format_num!"=="2" (
      set "media_type=a música"
-     set "media_format=--format (bestaudio[acodec^=opus]/bestaudio)/best --extract-audio --audio-format mp3 --audio-quality 0"
+     set "media_format=--extract-audio --audio-format mp3 --audio-quality 0"
 ) else (
      call :displayErrorMessage !MISSING_ARGUMENTS_ERROR_MESSAGE!
      goto :handleYouTubeDownload
