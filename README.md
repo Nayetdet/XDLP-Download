@@ -22,4 +22,4 @@ Antes de usar este script, certifique-se de ter as seguintes ferramentas instala
 8. O arquivo será salvo no diretório de downloads padrão do seu sistema.
 
 ## Notas
-- Além de permitir o download de vídeos do YouTube, o script oferece a flexibilidade de explorar outros sites suportados pelo yt-dlp. Ao utilizar o script, você tem a opção de pesquisar e baixar conteúdo de uma ampla variedade de plataformas suportadas. Consulte a [documentação completa do yt-dlp](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md) para obter a lista abrangente de sites suportados e as diversas opções de pesquisa disponíveis.
+Além de permitir o download de vídeos do YouTube, o script oferece a flexibilidade de explorar outros sites suportados pelo yt-dlp. Ao utilizar o script, você tem a opção de pesquisar e baixar conteúdo de uma ampla variedade de plataformas suportadas. Consulte a [documentação completa do yt-dlp](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md) para obter a lista abrangente de sites suportados e as diversas opções de pesquisa disponíveis.
