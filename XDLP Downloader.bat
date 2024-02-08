@@ -4,7 +4,7 @@ chcp 65001 > nul & rem Formata o console para o padrão UTF-8.
 title XDLP Downloader
 
 rem Define e aplica o tamanho da janela do console para uso no script.
-rem Ajuste inicial que mantém o tamanho da tela fixo, mesmo se o usuário interagir com o console antes do término de "checkRequirements".
+rem Ajuste inicial que mantém o tamanho da tela fixo, mesmo se o usuário interagir com o console antes do término de "checkDependencies".
 set "DEFAULT_COLS=118" & set "DEFAULT_LINES=35"
 mode con cols=!DEFAULT_COLS! lines=!DEFAULT_LINES!
 
@@ -15,12 +15,12 @@ rem Mensagens de erro:
 set "MISSING_ARGUMENTS_ERROR_MESSAGE=Digite corretamente os argumentos do comando. Tente novamente."
 set "DOWNLOAD_ERROR_MESSAGE=Ocorreu um erro durante o download. Tente novamente."
 
-rem Início da execução dos blocos de código principais:
-call :checkRequirements & rem Verifica se os requerimentos mínimos estão instalados.
-call :getDownloadsFolderPath & rem Obtém o diretório de downloads padrão do registro do Windows.
-goto :choosePlatform & rem Redireciona o usuário para a escolha da plataforma (YouTube ou Spotify).
+rem Execução dos blocos de código principais:
+call :checkDependencies
+call :retrieveDownloadsPath
+goto :selectPlatform
 
-:printTitle
+:displayTitle
 mode con cols=!DEFAULT_COLS! lines=!DEFAULT_LINES! & rem Mantém o tamanho da tela fixo, mesmo se o usuário redimensionar a tela.
 color !DEFAULT_COLOR! & rem Evita que o console perca a cor durante a aplicação.
 cls
@@ -49,39 +49,40 @@ for %%t in (
 echo:
 exit /b
 
-:printErrorMessage
-call :printTitle
+:displayErrorMessage
+call :displayTitle
 echo %*
 pause
 exit /b
 
-:checkRequirements
-rem Requisitos que precisam estar localizados no PATH do sistema.
-set "REQUIREMENTS[0]=py yt-dlp spotdl ffmpeg ffprobe AtomicParsley"
+:checkDependencies
+rem Dependências que precisam estar localizados no PATH do sistema.
+set "DEPENDENCIES[0]=py yt-dlp spotdl ffmpeg ffprobe AtomicParsley"
 set "PATH_ERROR_MESSAGE[0]=o PATH d"
 
 set "COMMAND[0][0]=where"
 set "COMMAND[0][1]="
 
-rem Requisitos que não precisam estar no PATH do sistema.
-set "REQUIREMENTS[1]=mutagen"
+rem Dependências que não precisam estar no PATH do sistema.
+set "DEPENDENCIES[1]=mutagen"
 set "PATH_ERROR_MESSAGE[1]="
 
 set "COMMAND[1][0]=py -c"
 set "COMMAND[1][1]=import"
 
-rem Verificação efetiva dos requerimentos.
+rem Realiza uma verificação efetiva das dependências.
 for /l %%i in (0, 1, 1) do (
-     for %%j in (!REQUIREMENTS[%%i]!) do (
+     for %%j in (!DEPENDENCIES[%%i]!) do (
           !COMMAND[%%i][0]! "!COMMAND[%%i][1]! %%j" > nul 2>&1 || (
-               call :printErrorMessage O %%j não está instalado n!PATH_ERROR_MESSAGE[%%i]!o sistema. Instale-o antes de continuar.
+               call :displayErrorMessage O %%j não está instalado n!PATH_ERROR_MESSAGE[%%i]!o sistema. Instale-o antes de continuar.
                exit
           )
      )
 )
 exit /b
 
-:getDownloadsFolderPath
+:retrieveDownloadsPath
+rem Obtém o diretório de downloads padrão do registro do Windows.
 set "REGISTRY_KEY_PATH=HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders"
 set "DOWNLOADS_FOLDER_ID={374DE290-123F-4565-9164-39C4925E467B}"
 for /f "usebackq tokens=2,*" %%a in (`reg query "!REGISTRY_KEY_PATH!" /v "!DOWNLOADS_FOLDER_ID!"`) do (
@@ -90,29 +91,32 @@ for /f "usebackq tokens=2,*" %%a in (`reg query "!REGISTRY_KEY_PATH!" /v "!DOWNL
 exit /b
 
 :handleYouTubeDownload
-call :printTitle
+call :displayTitle
 echo Escolha o formato digitando o número correspondente:
 echo 1. Vídeo + Áudio
 echo 2. Áudio
 echo:
 
-set "format_num="
-set /p "format_num=> "
+set "media_format_num="
+set /p "media_format_num=> "
 
-if "!format_num!"=="1" (
-     set "format=--format bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best --remux-video mp4"
-) else if "!format_num!"=="2" (
-     set "format=--format (bestaudio[acodec^=opus]/bestaudio)/best --extract-audio --audio-format mp3 --audio-quality 0"
+if "!media_format_num!"=="1" (
+     set "media_type=o vídeo"
+     set "media_format=--format bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best --remux-video mp4"
+) else if "!media_format_num!"=="2" (
+     set "media_type=a música"
+     set "media_format=--format (bestaudio[acodec^=opus]/bestaudio)/best --extract-audio --audio-format mp3 --audio-quality 0"
 ) else (
-     call :printErrorMessage !MISSING_ARGUMENTS_ERROR_MESSAGE!
+     call :displayErrorMessage !MISSING_ARGUMENTS_ERROR_MESSAGE!
      goto :handleYouTubeDownload
 )
 
-call :printTitle
-echo Procurando pelo vídeo: !query!
+call :displayTitle
+echo Procurando pel!media_type! no !platform!: !query!
 echo Por favor, aguarde enquanto o download é realizado...
 echo:
 
+rem Realiza o download efetivo do vídeo do YouTube.
 yt-dlp --output "!downloads_path!\%%(title)s.%%(ext)s" ^
        --default-search "ytsearch"                     ^
        --throttled-rate 100K                           ^
@@ -127,22 +131,25 @@ yt-dlp --output "!downloads_path!\%%(title)s.%%(ext)s" ^
        --continue                                      ^
        --add-metadata                                  ^
        --embed-thumbnail                               ^
-       !format!                                        ^
+       !media_format!                                  ^
        "!query!"
 exit /b
 
 :handleSpotifyDownload
-call :printTitle
-echo Procurando pela música: !query!
+call :displayTitle
+echo Procurando pela música no !platform!: !query!
 echo Por favor, aguarde enquanto o download é realizado...
 echo:
 
-cd /d !downloads_path! & rem Garante que o spotdl salve os arquivos na pasta de downloads do usuário.
+rem Garante que o spotdl salve os arquivos na pasta de downloads do usuário.
+cd /d !downloads_path!
+
+rem Realiza o download efetivo da música do Spotify.
 spotdl download "!query!"
 exit /b
 
-:choosePlatform
-call :printTitle
+:selectPlatform
+call :displayTitle
 echo Escolha a plataforma digitando o número correspondente:
 echo 1. YouTube
 echo 2. Spotify
@@ -151,36 +158,37 @@ echo:
 set "platform_num="
 set /p "platform_num=> "
 
-if "%platform_num%"=="1" (
-     set "platform=YouTube"
-) else if "%platform_num%"=="2" (
+if "!platform_num!"=="1" (
+     set "platform=Youtube"
+) else if "!platform_num!"=="2" (
      set "platform=Spotify"
 ) else (
-    call :printErrorMessage !MISSING_ARGUMENTS_ERROR_MESSAGE!
-    goto :choosePlatform
+    call :displayErrorMessage !MISSING_ARGUMENTS_ERROR_MESSAGE!
+    goto :selectPlatform
 )
 
-:handlePlatform
-call :printTitle
+:handlePlatformSelection
+call :displayTitle
 set "query="
-set /p "query=> Insira o nome ou o URL de um vídeo do !platform!: "
+set /p "query=> Insira o nome ou o URL de algum conteúdo do !platform!: "
 echo:
 
 if "!platform_num!"=="1" (
-     rem Baixa o vídeo do YouTube.
      call :handleYouTubeDownload
-) else (
-     rem Baixa o vídeo do Spotify.
+) else if "!platform_num!"=="2" (
      call :handleSpotifyDownload
+) else (
+     call :displayErrorMessage !MISSING_ARGUMENTS_ERROR_MESSAGE!
+     goto :selectPlatform
 )
 
 rem Verifica se ocorreu algum erro durante o download.
 if not !errorlevel!==0 (
-     call :printErrorMessage !DOWNLOAD_ERROR_MESSAGE!
-     goto :handlePlatform
+     call :displayErrorMessage !DOWNLOAD_ERROR_MESSAGE!
+     goto :handlePlatformSelection
 )
 
-call :printTitle
+call :displayTitle
 echo Download concluído com sucesso. O arquivo foi salvo em:
 echo !downloads_path!
 echo:
@@ -192,20 +200,21 @@ if not !errorlevel!==0 (
     explorer "!downloads_path!"
 )
 
-:chooseRestart
-set "restart="
-set /p "restart=> Gostaria de baixar outro vídeo? [S/N]: "
+:requestRestart
+set "restart_choice="
+set /p "restart_choice=> Gostaria de baixar outro vídeo? [S/N]: "
 
-if /i "!restart!"=="s" (
-     goto :choosePlatform
-) else if /i "!restart!"=="n" (
-     call :printTitle
+if /i "!restart_choice!"=="s" (
+     goto :selectPlatform
+) else if /i "!restart_choice!"=="n" (
+     call :displayTitle
      echo Fechando o programa...
      timeout /t 1 /nobreak > nul
      endlocal
      exit
 ) else (
-     call :printErrorMessage !MISSING_ARGUMENTS_ERROR_MESSAGE!
-     call :printTitle
-     goto :chooseRestart
+     call :displayErrorMessage !MISSING_ARGUMENTS_ERROR_MESSAGE!
+     call :displayTitle
+     goto :requestRestart
 )
+ 
